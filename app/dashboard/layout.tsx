@@ -2,7 +2,7 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { UserButton } from "@clerk/nextjs";
 import Link from "next/link";
-import { MapPin, Home, Map, Settings } from "lucide-react";
+import { MapPin, Home, Map, BookOpen } from "lucide-react";
 
 export default async function DashboardLayout({
   children,
@@ -34,6 +34,28 @@ export default async function DashboardLayout({
             <span className="text-xl font-bold text-gray-900">KabuNav</span>
           </Link>
 
+          {/* Desktop Navigation */}
+          <nav className="hidden md:flex items-center gap-6">
+            <Link
+              href={basePath}
+              className="text-sm font-medium text-gray-600 hover:text-emerald-600"
+            >
+              Dashboard
+            </Link>
+            <Link
+              href={`${basePath}/courses`}
+              className="text-sm font-medium text-gray-600 hover:text-emerald-600"
+            >
+              Courses
+            </Link>
+            <Link
+              href={`${basePath}/map`}
+              className="text-sm font-medium text-gray-600 hover:text-emerald-600"
+            >
+              Campus Map
+            </Link>
+          </nav>
+
           <div className="flex items-center gap-4">
             <span className="text-sm text-gray-600 hidden sm:block">
               {user?.firstName || user?.emailAddresses[0]?.emailAddress}
@@ -62,18 +84,18 @@ export default async function DashboardLayout({
             <span className="text-xs">Home</span>
           </Link>
           <Link
+            href={`${basePath}/courses`}
+            className="flex flex-col items-center gap-1 px-4 py-2 text-gray-600 hover:text-emerald-600"
+          >
+            <BookOpen className="h-5 w-5" />
+            <span className="text-xs">Courses</span>
+          </Link>
+          <Link
             href={`${basePath}/map`}
             className="flex flex-col items-center gap-1 px-4 py-2 text-gray-600 hover:text-emerald-600"
           >
             <Map className="h-5 w-5" />
             <span className="text-xs">Map</span>
-          </Link>
-          <Link
-            href={`${basePath}/settings`}
-            className="flex flex-col items-center gap-1 px-4 py-2 text-gray-600 hover:text-emerald-600"
-          >
-            <Settings className="h-5 w-5" />
-            <span className="text-xs">Settings</span>
           </Link>
         </div>
       </nav>

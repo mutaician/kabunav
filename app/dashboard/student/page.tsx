@@ -3,73 +3,41 @@ import { Card, CardContent, CardHeader, CardTitle } from "@/components/ui/card";
 import { Button } from "@/components/ui/button";
 import { Clock, MapPin, User, CheckCircle, XCircle, AlertCircle } from "lucide-react";
 import Link from "next/link";
+import { auth, currentUser } from "@clerk/nextjs/server";
+import { redirect } from "next/navigation";
+import { getStudentClasses, getStudentEnrolledCourses } from "@/lib/db/queries";
+import { RefreshButton } from "./refresh-button";
 
-// Demo data - in production, this would come from the database
-const todayClasses = [
-  {
-    id: "1",
-    courseCode: "CS 101",
-    courseName: "Introduction to Computer Science",
-    startTime: "08:00",
-    endTime: "10:00",
-    venue: "Science Lab - S201",
-    building: "School of Science Building",
-    lecturer: "Dr. John Mutua",
-    status: "confirmed" as const,
-  },
-  {
-    id: "2",
-    courseCode: "CS 201",
-    courseName: "Data Structures and Algorithms",
-    startTime: "10:30",
-    endTime: "12:30",
-    venue: "Science Lab - S201",
-    building: "School of Science Building",
-    lecturer: "Dr. John Mutua",
-    status: "pending" as const,
-  },
-  {
-    id: "3",
-    courseCode: "BUS 101",
-    courseName: "Introduction to Business",
-    startTime: "14:00",
-    endTime: "16:00",
-    venue: "Business Hall - B102",
-    building: "School of Business",
-    lecturer: "Prof. Mary Wanjiku",
-    status: "cancelled" as const,
-    cancellationReason: "Lecturer attending a conference",
-  },
-  {
-    id: "4",
-    courseCode: "MTH 201",
-    courseName: "Calculus II",
-    startTime: "16:30",
-    endTime: "18:00",
-    venue: "Library Hall - L1",
-    building: "Margaret Thatcher Library",
-    lecturer: "Prof. Mary Wanjiku",
-    status: "pending" as const,
-  },
-];
+type ClassStatus = "pending" | "confirmed" | "cancelled";
 
-function StatusBadge({ status }: { status: "pending" | "confirmed" | "cancelled" }) {
+interface ClassSession {
+  id: string;
+  courseCode: string;
+  courseName: string;
+  startTime: string;
+  endTime: string;
+  venueName: string | null;
+  venueBuilding: string | null;
+  venueId: string | null;
+  lecturerName: string | null;
+  status: ClassStatus;
+  cancellationReason: string | null;
+}
+
+function StatusBadge({ status }: { status: ClassStatus }) {
   const config = {
     pending: {
       label: "Pending",
-      variant: "outline" as const,
       className: "border-amber-500 text-amber-600 bg-amber-50",
       icon: AlertCircle,
     },
     confirmed: {
       label: "Confirmed",
-      variant: "outline" as const,
       className: "border-emerald-500 text-emerald-600 bg-emerald-50",
       icon: CheckCircle,
     },
     cancelled: {
       label: "Cancelled",
-      variant: "outline" as const,
       className: "border-red-500 text-red-600 bg-red-50",
       icon: XCircle,
     },
@@ -85,7 +53,7 @@ function StatusBadge({ status }: { status: "pending" | "confirmed" | "cancelled"
   );
 }
 
-function ClassCard({ classSession }: { classSession: typeof todayClasses[0] }) {
+function ClassCard({ classSession }: { classSession: ClassSession }) {
   const isCancelled = classSession.status === "cancelled";
 
   return (
@@ -109,11 +77,11 @@ function ClassCard({ classSession }: { classSession: typeof todayClasses[0] }) {
           </div>
           <div className="flex items-center gap-2">
             <MapPin className="h-4 w-4" />
-            <span>{classSession.venue}</span>
+            <span>{classSession.venueName || "TBA"}</span>
           </div>
           <div className="flex items-center gap-2">
             <User className="h-4 w-4" />
-            <span>{classSession.lecturer}</span>
+            <span>{classSession.lecturerName || "TBA"}</span>
           </div>
         </div>
 
@@ -126,12 +94,12 @@ function ClassCard({ classSession }: { classSession: typeof todayClasses[0] }) {
         )}
 
         <div className="mt-4 flex gap-2">
-          <Link href={`/dashboard/student/map?venue=${classSession.id}`} className="flex-1">
+          <Link href={`/dashboard/student/map?venue=${classSession.venueId}`} className="flex-1">
             <Button 
               variant="outline" 
               className="w-full" 
               size="sm"
-              disabled={isCancelled}
+              disabled={isCancelled || !classSession.venueId}
             >
               <MapPin className="h-4 w-4 mr-1" />
               Navigate
@@ -143,7 +111,28 @@ function ClassCard({ classSession }: { classSession: typeof todayClasses[0] }) {
   );
 }
 
-export default function StudentDashboard() {
+export default async function StudentDashboard() {
+  const { userId } = await auth();
+  
+  if (!userId) {
+    redirect("/sign-in");
+  }
+
+  const user = await currentUser();
+  const role = user?.unsafeMetadata?.role;
+
+  if (role !== "student") {
+    redirect("/dashboard");
+  }
+
+  // Use Clerk userId as the student identifier
+  const studentId = userId;
+  
+  const [classes, enrolledCourses] = await Promise.all([
+    getStudentClasses(studentId),
+    getStudentEnrolledCourses(studentId),
+  ]);
+
   const today = new Date().toLocaleDateString("en-US", {
     weekday: "long",
     year: "numeric",
@@ -151,16 +140,19 @@ export default function StudentDashboard() {
     day: "numeric",
   });
 
-  const confirmedCount = todayClasses.filter(c => c.status === "confirmed").length;
-  const pendingCount = todayClasses.filter(c => c.status === "pending").length;
-  const cancelledCount = todayClasses.filter(c => c.status === "cancelled").length;
+  const confirmedCount = classes.filter(c => c.status === "confirmed").length;
+  const pendingCount = classes.filter(c => c.status === "pending").length;
+  const cancelledCount = classes.filter(c => c.status === "cancelled").length;
 
   return (
     <div className="max-w-4xl mx-auto">
       {/* Header */}
-      <div className="mb-6">
-        <h1 className="text-2xl font-bold text-gray-900">Today&apos;s Classes</h1>
-        <p className="text-gray-600">{today}</p>
+      <div className="mb-6 flex justify-between items-start">
+        <div>
+          <h1 className="text-2xl font-bold text-gray-900">Today&apos;s Classes</h1>
+          <p className="text-gray-600">{today}</p>
+        </div>
+        <RefreshButton />
       </div>
 
       {/* Stats */}
@@ -181,14 +173,58 @@ export default function StudentDashboard() {
 
       {/* Class List */}
       <div className="space-y-4">
-        {todayClasses.map((classSession) => (
-          <ClassCard key={classSession.id} classSession={classSession} />
+        {classes.map((classSession) => (
+          <ClassCard 
+            key={classSession.id} 
+            classSession={{
+              id: classSession.id,
+              courseCode: classSession.courseCode,
+              courseName: classSession.courseName,
+              startTime: classSession.startTime,
+              endTime: classSession.endTime,
+              venueName: classSession.venueName,
+              venueBuilding: classSession.venueBuilding,
+              venueId: classSession.venueId,
+              lecturerName: classSession.lecturerName,
+              status: classSession.status as ClassStatus,
+              cancellationReason: classSession.cancellationReason,
+            }} 
+          />
         ))}
       </div>
 
-      {todayClasses.length === 0 && (
-        <div className="text-center py-12">
-          <p className="text-gray-500">No classes scheduled for today</p>
+      {classes.length === 0 && (
+        <div className="text-center py-12 bg-gray-50 rounded-lg">
+          {enrolledCourses.length > 0 ? (
+            <>
+              <p className="text-gray-500">No classes scheduled for today</p>
+              <p className="text-sm text-gray-400 mt-1">
+                You&apos;re enrolled in {enrolledCourses.length} course(s). Check back when your lecturers schedule classes.
+              </p>
+              <div className="mt-4 flex flex-wrap justify-center gap-2">
+                {enrolledCourses.map((course) => (
+                  <span 
+                    key={course.id}
+                    className="inline-block bg-emerald-100 text-emerald-700 text-sm px-3 py-1 rounded-full"
+                  >
+                    {course.code}
+                  </span>
+                ))}
+              </div>
+            </>
+          ) : (
+            <>
+              <p className="text-gray-500">No classes scheduled for today</p>
+              <p className="text-sm text-gray-400 mt-1">
+                You haven&apos;t enrolled in any courses yet.
+              </p>
+              <Link href="/dashboard/student/courses">
+                <Button className="mt-4" size="sm">
+                  Browse Courses
+                </Button>
+              </Link>
+            </>
+          )}
         </div>
       )}
     </div>
