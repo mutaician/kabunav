@@ -382,7 +382,7 @@ export function CampusMap({
       )}
 
       {/* Legend */}
-      <div className="absolute bottom-4 left-4 z-[1000] bg-white/90 backdrop-blur rounded-lg shadow p-3 text-xs">
+      <div className="absolute top-4 left-4 z-[1000] bg-white/90 backdrop-blur rounded-lg shadow p-3 text-xs">
         <div className="flex items-center gap-2 mb-1">
           <div className="w-3 h-3 bg-blue-500 rounded-full"></div>
           <span>Your Location</span>

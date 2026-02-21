@@ -1,0 +1,11 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="512" height="512" viewBox="0 0 512 512">
+  <rect width="512" height="512" rx="100" fill="#10b981"/>
+  <g transform="translate(100, 80)">
+    <!-- Map Pin Icon -->
+    <path fill="white" d="M156 0C95.3 0 46 49.3 46 110c0 28.5 10.8 54.5 28.5 74.2L156 290l81.5-105.8C255.2 164.5 266 138.5 266 110 266 49.3 216.7 0 156 0zm0 150c-22.1 0-40-17.9-40-40s17.9-40 40-40 40 17.9 40 40-17.9 40-40 40z"/>
+    <!-- Bell notification indicator -->
+    <circle cx="230" cy="40" r="40" fill="#fbbf24"/>
+    <path fill="#10b981" d="M230 15c-13.8 0-25 11.2-25 25v15c-5.5 2.8-10 8.8-10 15v5h70v-5c0-6.2-4.5-12.2-10-15v-15c0-13.8-11.2-25-25-25zm0 65c5.5 0 10-4.5 10-10h-20c0 5.5 4.5 10 10 10z"/>
+  </g>
+  <text x="256" y="400" text-anchor="middle" fill="white" font-family="Arial, sans-serif" font-size="72" font-weight="bold">KabuNav</text>
+</svg>

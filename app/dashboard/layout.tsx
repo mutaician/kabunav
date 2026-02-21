@@ -2,7 +2,9 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { UserButton } from "@clerk/nextjs";
 import Link from "next/link";
-import { MapPin, Home, Map, BookOpen } from "lucide-react";
+import Image from "next/image";
+import { Home, Map, BookOpen } from "lucide-react";
+import { DashboardClientWrapper } from "./dashboard-wrapper";
 
 export default async function DashboardLayout({
   children,
@@ -30,7 +32,13 @@ export default async function DashboardLayout({
       <header className="bg-white border-b border-gray-200 sticky top-0 z-50">
         <div className="container mx-auto px-4 h-16 flex items-center justify-between">
           <Link href={basePath} className="flex items-center gap-2">
-            <MapPin className="h-7 w-7 text-emerald-600" />
+            <Image
+              src="/icons/icon.svg"
+              alt="KabuNav"
+              width={28}
+              height={28}
+              className="h-7 w-7"
+            />
             <span className="text-xl font-bold text-gray-900">KabuNav</span>
           </Link>
 
@@ -102,6 +110,9 @@ export default async function DashboardLayout({
 
       {/* Spacer for mobile nav */}
       <div className="h-20 md:hidden" />
+      
+      {/* PWA Install Prompt */}
+      <DashboardClientWrapper />
     </div>
   );
 }

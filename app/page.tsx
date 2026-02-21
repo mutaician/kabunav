@@ -2,6 +2,7 @@ import Link from "next/link";
 import { auth } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { Button } from "@/components/ui/button";
+import Image from "next/image";
 import { MapPin, Bell, CheckCircle, Clock } from "lucide-react";
 
 export default async function HomePage() {
@@ -17,7 +18,13 @@ export default async function HomePage() {
       {/* Header */}
       <header className="container mx-auto px-4 py-6 flex justify-between items-center">
         <div className="flex items-center gap-2">
-          <MapPin className="h-8 w-8 text-emerald-600" />
+          <Image
+            src="/icons/icon.svg"
+            alt="KabuNav"
+            width={32}
+            height={32}
+            className="h-8 w-8"
+          />
           <span className="text-2xl font-bold text-gray-900">KabuNav</span>
         </div>
         <div className="flex gap-3">

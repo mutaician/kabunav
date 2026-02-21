@@ -7,6 +7,7 @@ import { auth, currentUser } from "@clerk/nextjs/server";
 import { redirect } from "next/navigation";
 import { getStudentClasses, getStudentEnrolledCourses } from "@/lib/db/queries";
 import { RefreshButton } from "./refresh-button";
+import { StudentDashboardWrapper } from "./student-wrapper";
 
 type ClassStatus = "pending" | "confirmed" | "cancelled";
 
@@ -144,16 +145,27 @@ export default async function StudentDashboard() {
   const pendingCount = classes.filter(c => c.status === "pending").length;
   const cancelledCount = classes.filter(c => c.status === "cancelled").length;
 
+  // Prepare classes for notification tracking
+  const classesForNotifications = classes.map(c => ({
+    id: c.id,
+    courseCode: c.courseCode,
+    courseName: c.courseName,
+    status: c.status,
+    venueName: c.venueName,
+    startTime: c.startTime,
+  }));
+
   return (
-    <div className="max-w-4xl mx-auto">
-      {/* Header */}
-      <div className="mb-6 flex justify-between items-start">
-        <div>
-          <h1 className="text-2xl font-bold text-gray-900">Today&apos;s Classes</h1>
-          <p className="text-gray-600">{today}</p>
+    <StudentDashboardWrapper classes={classesForNotifications}>
+      <div className="max-w-4xl mx-auto">
+        {/* Header */}
+        <div className="mb-6 flex justify-between items-start">
+          <div>
+            <h1 className="text-2xl font-bold text-gray-900">Today&apos;s Classes</h1>
+            <p className="text-gray-600">{today}</p>
+          </div>
+          <RefreshButton />
         </div>
-        <RefreshButton />
-      </div>
 
       {/* Stats */}
       <div className="grid grid-cols-3 gap-4 mb-6">
@@ -227,6 +239,7 @@ export default async function StudentDashboard() {
           )}
         </div>
       )}
-    </div>
+      </div>
+    </StudentDashboardWrapper>
   );
 }
