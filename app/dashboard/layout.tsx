@@ -3,7 +3,7 @@ import { redirect } from "next/navigation";
 import { UserButton } from "@clerk/nextjs";
 import Link from "next/link";
 import Image from "next/image";
-import { Home, Map, BookOpen } from "lucide-react";
+import { Home, Map, BookOpen, Settings } from "lucide-react";
 import { DashboardClientWrapper } from "./dashboard-wrapper";
 
 export default async function DashboardLayout({
@@ -62,6 +62,12 @@ export default async function DashboardLayout({
             >
               Campus Map
             </Link>
+            <Link
+              href={`${basePath}/settings`}
+              className="text-sm font-medium text-gray-600 hover:text-emerald-600"
+            >
+              Settings
+            </Link>
           </nav>
 
           <div className="flex items-center gap-4">
@@ -104,6 +110,13 @@ export default async function DashboardLayout({
           >
             <Map className="h-5 w-5" />
             <span className="text-xs">Map</span>
+          </Link>
+          <Link
+            href={`${basePath}/settings`}
+            className="flex flex-col items-center gap-1 px-4 py-2 text-gray-600 hover:text-emerald-600"
+          >
+            <Settings className="h-5 w-5" />
+            <span className="text-xs">Settings</span>
           </Link>
         </div>
       </nav>

@@ -5,6 +5,7 @@ export const users = sqliteTable("users", {
   id: text("id").primaryKey(), // Clerk user ID
   email: text("email").notNull().unique(),
   name: text("name").notNull(),
+  phone: text("phone"), // Phone number for SMS notifications (e.g., +254712345678)
   role: text("role", { enum: ["student", "lecturer", "admin"] }).notNull().default("student"),
   createdAt: integer("created_at", { mode: "timestamp" }).$defaultFn(() => new Date()),
 });

@@ -236,3 +236,19 @@ export async function getStudentEnrolledCourses(studentId: string) {
     .leftJoin(users, eq(courses.lecturerId, users.id))
     .where(eq(enrollments.studentId, studentId));
 }
+
+// Get phone numbers of all students enrolled in a course
+export async function getEnrolledStudentPhones(courseId: string) {
+  const results = await db
+    .select({
+      phone: users.phone,
+    })
+    .from(enrollments)
+    .innerJoin(users, eq(enrollments.studentId, users.id))
+    .where(eq(enrollments.courseId, courseId));
+
+  // Filter out null/empty phones and return array of phone strings
+  return results
+    .map((r) => r.phone)
+    .filter((phone): phone is string => !!phone && phone.length > 0);
+}
